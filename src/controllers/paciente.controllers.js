@@ -1,6 +1,6 @@
 import Paciente from  "../models/paciente.js"
 
-
+//este es el cambio
 
 // funcion crear Paciente  
 export const crearPaciente = async (req,res)=>{
