@@ -1,9 +1,8 @@
 import {verifyToken} from  "../helpers/generateTokens.js"
-import User from  "../models/paciente.js"
+import User from  "../models/psicologo.js"
 
 
-export const authMiddleware = async (req, res, next)=>{
-    
+export const authMiddlewarePsi = async (req, res, next)=>{
     try{
         const {userToken}= req.cookies;
 

@@ -1,4 +1,8 @@
 import Paciente from  "../models/paciente.js"
+import {tokenSing} from  "../helpers/generateTokens.js"
+import bcrypt from "bcrypt";
+import { serializedToken } from "../helpers/setCookie.js";
+
 
 //este es el cambio
 
@@ -8,7 +12,7 @@ export const crearPaciente = async (req,res)=>{
   const paciente = new Paciente(req.body);
   await paciente.save();
   
-  res.status(500).json({success: true, request: "Se creó correctamente"});
+  res.status(200).json({success: true, request: "Se creó correctamente"});
   }
   catch{
     res.status(200).json({success: false, error:"Data incorrecta"})
@@ -41,7 +45,7 @@ export const buscarPaciente = async (req, res)=>{
     if(!content){
       return res.status(200).json({success: false, error:"El paciente no ha sido encontrado"})}//todo lo que no necesitamos es false y lo que ncesitamos es true
    
-      return res.status(200).json({success: true, content})//aquí status 200 en todas 
+      return res.status(200).json({success: true, content})
   })
   .catch((error)=>{
     res.status(500).json({success: false, error: 'Error, intente de nuevo owo'})
@@ -128,12 +132,37 @@ export const getPerfilId = async (req, res)=>{
     return  res.status(500).json({success: false, error: 'Error, intente de nuevo'})
   })
 }
+// login paciente email
 
+export const loginPaciente= async (req, res)=> {
+    
+  const  {email, password} = req.body;
+  console.log(email)
 
+  try{
+      const paciente = await Paciente.findOne({email:email}).select(' profile password name email role')
+      console.log(paciente)
 
+  if(!paciente){
+        return res.status(200).json({success: false, error: 'Usuario no encontrado'})
+      }
 
+      const checkPassword= bcrypt.compareSync(password, paciente.password)
 
+    
+      if(checkPassword){
+        const tokensSession =await tokenSing(paciente);
+        
+        const serialized = await serializedToken(tokensSession); // crea la cookie con el jwt dentro 
+        res.setHeader('set-Cookie', serialized); 
 
-
-
-
+        return res.status(200).json({success: true, login: true,  paciente })
+      }
+      else {
+        return   res.status(200).json({success: false, error: 'Usuario o contraseña incorrectos'})
+      }
+  }
+  catch{
+      return res.status(500).json({success: false, error: 'error, intente de nuevo'})
+  }
+}

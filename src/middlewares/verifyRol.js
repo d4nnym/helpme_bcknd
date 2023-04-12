@@ -9,6 +9,7 @@
 
 export const checkRol =(roles)=>(req, res, next)=>{  
    try{
+    console.log('aqui')
     const {user}= req
     const roleUser= user.role //extrae el rol del usuario desde la bd 
     const checkValueRol = roles.some((rolSingle)=> roleUser.includes(rolSingle))
@@ -20,6 +21,6 @@ export const checkRol =(roles)=>(req, res, next)=>{
     }
     next()
    }catch(e){
-    return res.status(500)({success: false, error: 'Error, intente de nuevo'})
+    return res.status(500).json({success: false, error: 'Error, intente de nuevo'})
     }
 }

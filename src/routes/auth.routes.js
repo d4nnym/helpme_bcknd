@@ -1,3 +1,4 @@
+/*
 import {loginCtr, loginCtrEmail} from  "../controllers/auth.controllers.js"
 import {Router} from "express"
 
@@ -9,3 +10,4 @@ router.post("/login2", loginCtrEmail)
 
 
 export default router;
+*/

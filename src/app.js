@@ -3,8 +3,9 @@ import morgan from "morgan"
 import cors from "cors"
 import {PORT} from "./config.js"
 import rutasPaciente from "./routes/paciente.routes.js"
-import rutasAuth from "./routes/auth.routes.js"
+//import rutasAuth from "./routes/auth.routes.js"
 import cookieParser from "cookie-parser"
+import rutasPsicologo from './routes/psicologo.routes.js'
 
 
 // configuraciones 
@@ -19,7 +20,8 @@ app.use(cookieParser());
 
 //routes 
 app.use(rutasPaciente);
-app.use('/user', rutasAuth); 
+//app.use('/user', rutasAuth); 
+app.use(rutasPsicologo);
 
 
 // exports
