@@ -4,7 +4,7 @@ import { JWT_SECRET } from '../config.js';
 
 //Genera un Token firmado 
 
-export const tokenSing =async ()=>{user
+export const tokenSing =async (user)=>{
  
     return jwt.sign(
     {
