@@ -135,7 +135,8 @@ export const getPerfilId = async (req, res)=>{
 // login paciente email
 
 export const loginPaciente= async (req, res)=> {
-    
+  console.log(req.body)
+  
   const  {email, password} = req.body;
   console.log(email)
 
@@ -154,7 +155,9 @@ export const loginPaciente= async (req, res)=> {
         const tokensSession =await tokenSing(paciente);
         
         const serialized = await serializedToken(tokensSession); // crea la cookie con el jwt dentro 
-        res.setHeader('set-Cookie', serialized); 
+        res.set('Access-Control-Allow-Credentials', 'true'); 
+        res.set('Access-Control-Allow-Origin', 'http://localhost:5000');
+        res.setHeader('set-cookie', serialized); 
 
         return res.status(200).json({success: true, login: true,  paciente })
       }
