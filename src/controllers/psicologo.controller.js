@@ -219,8 +219,9 @@ export const loginPsicologo= async (req, res)=> {
       if(checkPassword){
         const tokensSession =await tokenSing(psicologo)
         const serialized = await serializedToken(tokensSession); // crea la cookie con el jwt dentro 
-        res.setHeader('set-CookiePsico', serialized); 
-         return res.status(200).json({success: true, psicologo })
+        res.setHeader('set-Cookie', serialized); 
+
+        return res.status(200).json({success: true, psicologo })
       }
       else {
         return   res.status(200).json({success: false, error: 'Usuario o contraseña incorrectos'})
