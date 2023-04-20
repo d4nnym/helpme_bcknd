@@ -17,6 +17,8 @@ app.use(express.urlencoded({ extended: false }));//investigar esta linea
 app.use(morgan("dev"));
 
 app.use(cookieParser());
+
+/*
 app.use(cors({ 
     
   origin: "http://localhost:5000",
@@ -26,6 +28,17 @@ app.use(cors({
     
   }));
 
+  app.use(cors({ 
+    
+    origin: "http://localhost:3100",
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, 
+      
+    }));
+*/
+
+app.use(cors())
 //routes 
 app.use(rutasPaciente);
 //app.use('/user', rutasAuth); 

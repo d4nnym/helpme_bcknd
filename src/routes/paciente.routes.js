@@ -13,11 +13,18 @@ import { checkRol } from "../middlewares/verifyRol.js";
 
 const router = Router();
 
+
+//sin autenticación 
 router.post("/paciente", crearPaciente);
+router.post("/paciente/login",  loginPaciente)
+
+
+//autenticadas 
+
 router.get(
   "/paciente/obtenerTodos",
   authMiddleware,
-  checkRol(["paciente"]),
+  checkRol(["admin"]),
   obtenerPacientes
 ); // ruta autenticada con jwt y permisos de usuario segun el rol
 
@@ -27,9 +34,13 @@ router.get(
   checkRol(["admin"]),
   buscarPaciente
 );
-router.delete("/paciente/eliminar/:id", eliminarPaciente);
-router.put("/paciente/:id", actualizarPaciente);
-router.get("/paciente/profile/:id", getPerfilId);
-router.post("/paciente/login",  loginPaciente)
+router.delete("/paciente/eliminar/:id", authMiddleware,
+checkRol(["admin"]), eliminarPaciente, );
+router.put("/paciente/:id", authMiddleware,
+checkRol(["admin"]), actualizarPaciente);
+router.get("/paciente/profile/:id", authMiddleware,
+checkRol(["admin"]), getPerfilId);
+
+
 
 export default router;
