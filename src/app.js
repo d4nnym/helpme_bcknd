@@ -18,7 +18,7 @@ app.use(morgan("dev"));
 
 app.use(cookieParser());
 
-/*
+
 app.use(cors({ 
     
   origin: "http://localhost:5000",
@@ -28,7 +28,7 @@ app.use(cors({
     
   }));
 
-  app.use(cors({ 
+  /*app.use(cors({ 
     
     origin: "http://localhost:3100",
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -38,7 +38,7 @@ app.use(cors({
     }));
 */
 
-app.use(cors())
+//app.use(cors())
 //routes 
 app.use(rutasPaciente);
 //app.use('/user', rutasAuth); 
