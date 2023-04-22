@@ -3,6 +3,7 @@ import Psicologo from '../models/psicologo.js'
 import {tokenSing} from  "../helpers/generateTokens.js"
 import bcrypt from "bcrypt";
 import { serializedToken } from "../helpers/setCookie.js";
+import Citas from "../models/citas.js";
 
 
 
@@ -232,4 +233,50 @@ export const loginPsicologo= async (req, res)=> {
   catch{
       return res.status(500).json({success: false, error: 'error, intente de nuevo'})
   }
+
+
+
+
+  
 }
+
+
+export const crearCitaParaPsicologo = async (req, res) => {
+  try {
+    const { psicologo, date, start_time, email } = req.body;
+    console.log(req.body);
+
+    // Verificar si el psicólogo tiene menos de 2 citas programadas para la fecha especificada
+    const citasDelDia = await Citas.find({ psicologo, date: { $eq: date } });
+    if (citasDelDia.length >= 2) {
+      return res.status(400).json({ mensaje: 'El psicólogo ya tiene 2 citas programadas para este día' });
+    }
+
+    // Verificar si el psicólogo ya tiene una cita a esa hora
+    const citaExistente = await Citas.findOne({ psicologo, date, start_time });
+    if (citaExistente) {
+      return res.status(400).json({ mensaje: 'El psicólogo ya tiene una cita programada a esa hora' });
+    }
+  /*
+    // Convertir el valor de start_time en un objeto Date
+    const [hours, minutes] = start_time.split(':');
+    const startDateTime = new Date();
+    startDateTime.setHours(hours);
+    startDateTime.setMinutes(minutes);
+    startDateTime.setSeconds(0);
+*/
+    
+    // Crear la nueva cita
+    const cita = new Citas({
+      psicologo,
+      date,
+      start_time
+    });
+    await cita.save();
+
+    res.status(201).json({ mensaje: 'Cita creada exitosamente' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: 'Error al crear la cita' });
+  }
+};

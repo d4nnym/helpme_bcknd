@@ -105,6 +105,7 @@ const psychoSchema = Schema(
     profession: profeSchema,
   },
   {
+
     versionKey: false,
     timestamps: true,
   }
