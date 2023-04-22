@@ -2,6 +2,7 @@ import Paciente from  "../models/paciente.js"
 import {tokenSing} from  "../helpers/generateTokens.js"
 import bcrypt from "bcrypt";
 import { serializedToken } from "../helpers/setCookie.js";
+import Citas from "../models/citas.js";
 
 
 //este es el cambio
@@ -48,7 +49,7 @@ export const buscarPaciente = async (req, res)=>{
       return res.status(200).json({success: true, content})
   })
   .catch((error)=>{
-    res.status(500).json({success: false, error: 'Error, intente de nuevo owo'})
+    res.status(500).json({success: false, error: 'Error, intente de nuevo owo buscar Paciente'})
   })
 }
 
@@ -135,13 +136,13 @@ export const getPerfilId = async (req, res)=>{
 // login paciente email
 
 export const loginPaciente= async (req, res)=> {
-  console.log(req.body)
+ 
   
   const  {email, password} = req.body;
   console.log(email)
 
   try{
-      const paciente = await Paciente.findOne({email:email}).select(' profile password name email role')
+      const paciente = await Paciente.findOne({email:email})//.select(' profile password name email role')
       console.log(paciente)
 
   if(!paciente){
@@ -159,7 +160,7 @@ export const loginPaciente= async (req, res)=> {
         //res.set('Access-Control-Allow-Origin', 'http://localhost:5000');
         res.setHeader('set-cookie', serialized); 
 
-        return res.status(200).json({success: true, login: true,  paciente })
+        return res.status(200).json({success: true,  paciente })
       }
       else {
         return   res.status(200).json({success: false, error: 'Usuario o contraseña incorrectos'})
@@ -169,3 +170,79 @@ export const loginPaciente= async (req, res)=> {
       return res.status(500).json({success: false, error: 'error, intente de nuevo'})
   }
 }
+
+
+//-------------------------------------------------------------------------------------------------------
+
+
+export const agendarCita = async (req, res) => {
+
+  const { profilePsicologo, profilePaciente,  date, idCita } = req.body;
+  
+  const cita = await Citas.findByIdAndUpdate({_id:idCita}, { $set:{disponible:false}});
+  console.log(cita)
+  try {
+  
+    // Verificar si el paciente ya tiene una  citas programadas para la fecha especificada
+    const citasDelDia = await Citas.find({ profilePaciente, date: { $eq: date } });
+    
+    if (citasDelDia.length >= 1) {
+
+      return res.status(400).json({ succes: false, mensaje: 'Ya  tienes una cita agendada para ese día' });
+    }
+
+    //agarrar los id de paciente. 
+    //const paciente = await Paciente.findOne({profilePaciente:Paciente.profile}).select('_id')
+    //console.log(paciente)
+    //Agendar
+   
+    
+    
+    return res.status(400).json({ succes: false, mensaje: 'todook' });
+ 
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ mensaje: 'Error al crear la cita xd' });
+    }
+
+    // Verificar si el psicologo ya tiene una cita a esa hora
+    //const citaExistente = await Citas.findOne({ idPsicologo, date, start_time });
+  //if (citaExistente) {
+     // return res.status(400).json({ mensaje: 'El psicólogo ya tiene una cita programada a esa hora' });
+    }
+  /*
+    // Convertir el valor de start_time en un objeto Date
+    const [hours, minutes] = start_time.split(':');
+    const startDateTime = new Date();
+    startDateTime.setHours(hours);
+    startDateTime.setMinutes(minutes);
+    startDateTime.setSeconds(0);
+*/
+    /*
+    // Crear la nueva cita
+    const cita = new Citas({
+      psicologo,
+      date,
+      start_time
+    });
+    await cita.save();
+
+    res.status(201).json({ mensaje: 'Cita creada exitosamente' });*/
+
+
+
+//Traer las citas 
+
+export const getCitaDisponibles = async (req, res) => {
+  try {
+    const cita = await Citas.find({disponible: true});
+    if (cita.length === 0) {
+      return res.status(200).json({ succes: false, request:  'No se encontraron citas disponibles' });
+    }
+    return res.status(200).json({ succes: true, request: 'Estas son las citas disponibles', citas: cita });
+  } catch (error) {
+    return res.status(500).json({ success: true, request: 'Hubo un error al obtener las citas', error: error });
+  }
+}
+
+

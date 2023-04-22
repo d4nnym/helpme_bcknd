@@ -1,9 +1,10 @@
 import { createPsycho, getPsycho,getPsychoByProfile,getProfe,deletePsychoById,deletePsychoByProfile, 
-    updatePsychoById ,getPsychoById,getPsychoValidados,getPsychoNoValidados, getPerfil,getPerfilId, loginPsicologo} 
+    updatePsychoById ,getPsychoById,getPsychoValidados,getPsychoNoValidados, getPerfil,getPerfilId, loginPsicologo, crearCitaParaPsicologo} 
     from '../controllers/psicologo.controller.js'
 import { authMiddlewarePsi } from "../middlewares/sessionPsicologo.js";
 import { checkRol } from "../middlewares/verifyRol.js";
 import {Router} from 'express'
+
 
 const router= Router()
 
@@ -26,9 +27,9 @@ router.delete('/psicologo/dele/:id', authMiddlewarePsi, checkRol(["admin"]), del
 router.delete('/psicologo/dele/:profile', authMiddlewarePsi, checkRol(["admin"]), deletePsychoByProfile)
 router.get('/psicologo-validados',authMiddlewarePsi, checkRol(["admin"]), getPsychoValidados)
 router.get('/psicologo-novalidados',authMiddlewarePsi, checkRol(["admin"]), getPsychoNoValidados)
+router.post('/crearCitas',authMiddlewarePsi, checkRol(["admin"]), getPsychoNoValidados)
 
-
-
+router.post('/psicologo/crearcitas', crearCitaParaPsicologo );
 
 //login
 
