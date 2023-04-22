@@ -83,7 +83,7 @@ const  psychoSchema = Schema({
     role:{type: String, default: 'paciente'},
     age:{type: Number},
     validacion:{type: Boolean, default: false},
-    profession: profeSchema,
+    profession: profeSchema,   
 },{
     versionKey: false,
     timestamps: true,

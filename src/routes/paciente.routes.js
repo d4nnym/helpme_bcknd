@@ -6,6 +6,8 @@ import {
   crearPaciente,
   eliminarPaciente,
   obtenerPacientes,
+  agendarCita,
+  getCitaDisponibles
 } from "../controllers/paciente.controllers.js";
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/session.js";
@@ -40,7 +42,9 @@ router.put("/paciente/:id", authMiddleware,
 checkRol(["admin"]), actualizarPaciente);
 router.get("/paciente/profile/:id", authMiddleware,
 checkRol(["admin"]), getPerfilId);
+router.put("/paciente/cita/agendarCita/", agendarCita);
 
+router.get("/paciente/citas/disponibles", getCitaDisponibles);
 
 
 export default router;
