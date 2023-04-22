@@ -9,10 +9,12 @@ import { serializedToken } from "../helpers/setCookie.js";
 //function create psicologo
 export const createPsycho = async (req, res) => {
   const psico = new Psicologo(req.body);
+  console.log(req.body)
   try {
     await psico.save();
     res.status(200).json({success: true, request: "Se creó correctamente"});
   } catch (error) {
+    console.log(error)
     res.status(200).json({success: false, error:"Data incorrecta"})
   }
 };
