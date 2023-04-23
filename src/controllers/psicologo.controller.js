@@ -4,8 +4,39 @@ import {tokenSing} from  "../helpers/generateTokens.js"
 import bcrypt from "bcrypt";
 import { serializedToken } from "../helpers/setCookie.js";
 import Citas from "../models/citas.js";
+import psicologo from '../models/psicologo.js';
 
 
+export const loginPsicologo= async (req, res)=> {
+    
+  const  {email, password} = req.body;
+  console.log(email)
+
+  try{
+      const psicologo = await Psicologo.findOne({email:email}).select(' profile password name email role')
+     
+
+  if(!psicologo){
+        return res.status(200).json({success: false, error: 'Usuario no encontrado'})
+      }
+
+      const checkPassword= bcrypt.compareSync(password, psicologo.password)
+      if(checkPassword){
+        const tokensSession =await tokenSing(psicologo)
+        const serialized = await serializedToken(tokensSession); // crea la cookie con el jwt dentro 
+        res.setHeader('set-Cookie', serialized); 
+
+        return res.status(200).json({success: true, psicologo })
+      }
+      else {
+        return   res.status(200).json({success: false, error: 'Usuario o contraseña incorrectos'})
+      }
+  }
+  catch{
+      return res.status(500).json({success: false, error: 'error, intente de nuevo'})
+  }
+
+}
 
 //function create psicologo
 export const createPsycho = async (req, res) => {
@@ -205,72 +236,35 @@ export const getPsychoNoValidados = async (req, res) => {
 
 // login paciente email
 
-export const loginPsicologo= async (req, res)=> {
-    
-  const  {email, password} = req.body;
-  console.log(email)
-
-  try{
-      const psicologo = await Psicologo.findOne({email:email}).select(' profile password name email role')
-     
-
-  if(!psicologo){
-        return res.status(200).json({success: false, error: 'Usuario no encontrado'})
-      }
-
-      const checkPassword= bcrypt.compareSync(password, psicologo.password)
-      if(checkPassword){
-        const tokensSession =await tokenSing(psicologo)
-        const serialized = await serializedToken(tokensSession); // crea la cookie con el jwt dentro 
-        res.setHeader('set-Cookie', serialized); 
-
-        return res.status(200).json({success: true, psicologo })
-      }
-      else {
-        return   res.status(200).json({success: false, error: 'Usuario o contraseña incorrectos'})
-      }
-  }
-  catch{
-      return res.status(500).json({success: false, error: 'error, intente de nuevo'})
-  }
-
-
-
-
-  
-}
-
 
 export const crearCitaParaPsicologo = async (req, res) => {
-  try {
-    const { psicologo, date, start_time, email } = req.body;
-    console.log(req.body);
 
+  const { date, start_time, emailPsicologo} = req.body;
+  const psicologo = await Psicologo.findOne({email:emailPsicologo}).select('_id')
+  console.log(psicologo)
+  
+  try {
     // Verificar si el psicólogo tiene menos de 2 citas programadas para la fecha especificada
+    
     const citasDelDia = await Citas.find({ psicologo, date: { $eq: date } });
     if (citasDelDia.length >= 2) {
       return res.status(400).json({ mensaje: 'El psicólogo ya tiene 2 citas programadas para este día' });
     }
 
+    //console.log(req.body ,' segunda vez');
+    const psico = req.body.psicologo
     // Verificar si el psicólogo ya tiene una cita a esa hora
-    const citaExistente = await Citas.findOne({ psicologo, date, start_time });
+    const citaExistente = await Citas.findOne({ psicologo, start_time, date});
     if (citaExistente) {
       return res.status(400).json({ mensaje: 'El psicólogo ya tiene una cita programada a esa hora' });
     }
-  /*
-    // Convertir el valor de start_time en un objeto Date
-    const [hours, minutes] = start_time.split(':');
-    const startDateTime = new Date();
-    startDateTime.setHours(hours);
-    startDateTime.setMinutes(minutes);
-    startDateTime.setSeconds(0);
-*/
-    
     // Crear la nueva cita
     const cita = new Citas({
       psicologo,
+      emailPsicologo,
       date,
-      start_time
+      start_time,
+  
     });
     await cita.save();
 
@@ -280,3 +274,124 @@ export const crearCitaParaPsicologo = async (req, res) => {
     res.status(500).json({ mensaje: 'Error al crear la cita' });
   }
 };
+
+export const logoutPs = async (req, res) => {
+
+  try{
+    res.clearCookie('userToken');
+    //res.send('Cookie eliminada');
+    return res.status(200).json({success: true, request: 'Cierre de sesión exitoso'})
+
+  }catch{
+
+    return res.status(500).json({success: false, error: 'error, intente de nuevo'})
+  }
+}
+
+
+
+
+
+//Función para validar el estado de una cita, cambia el estado de la variable "realizada" de false
+export const estadoCita = async (req, res) => {
+
+  const { idCita } = req.body;
+  const citaExistente = await Citas.findById(idCita);
+
+  try {
+
+  
+    if (!citaExistente) {
+      return res.status(400).json({ mensaje: 'La cita que estas buscando no existe' });
+    }
+
+    const cita = await Citas.findByIdAndUpdate({_id:idCita}, { $set:{realizada:true}});
+    return res.status(400).json({ mensaje: 'Cita realizada' });
+
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ mensaje: 'Error al crear la cita ' });
+    }
+}
+
+export const historialCitasAntiguas = async (req, res) => {
+
+  const {id}=req.params 
+  const psicologo= await Psicologo.findById(id).select('email')
+  console.log(psicologo)
+  
+
+  const cita = await Citas.find({psicologo, realizada: true});
+  
+  try {
+      
+
+      if (cita.length === 0) {
+        return res.status(200).json({ succes: false, request:  'No se tiene historial de citas' });
+      }
+      return res.status(200).json({ succes: true, request: 'Este es el historial de citas', citas: cita });
+   } catch (error) {
+        return res.status(500).json({ success: true, request: 'Hubo un error al obtener las citas', error: error });
+  }
+}
+
+//traer todas la citas  campo realizada en false
+export const getRealizadaFalse = async (req, res) => {
+  const {psicologo} = req.body;
+    console.log(req.body)
+
+  try {
+    const citarealizada = await Citas.find({psicologo, realizada: false});
+    if (citarealizada.length === 0) {
+      return res.status(200).json({ succes: false, request:  'No se encontraron cita en la base de dat0s' });
+    }
+    return res.status(200).json({ succes: true, request: 'Se obtuvieron todos loscitas realizada: false con éxito4', citas: citarealizada });
+  } catch (error) {
+    return res.status(500).json({ success: true, request: 'Hubo un error al obtener los cit4as', error: error });
+  }
+}
+ //update cita
+ //function update psychologist for id
+
+export const updateCitasId = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const update = req.body;
+    const options = { new: true }; // Devuelve el documento actualizado
+    const citau = await Citas.findByIdAndUpdate( id,  update, options);
+
+    if (!citau) {
+      return res.status(200).json({ succes: false, request: "No se encontró la cita con el id proporcionado" });
+    }
+    return res.status(200).json({success: true, request: "la cita se actualizó con éxito", citau });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, request: "Error al actualizar la ciata", error: error.message });
+  }
+};
+
+//ELIMINA UNA CITA 
+
+export const eliminarCitaPsicologo = async (req, res)=>{
+
+  const{id}=req.body;
+
+  await Citas.findByIdAndDelete(id).then((content)=>{
+    
+    if(content)
+    return res.status(200).json({success: true, request: `La cita ha sido eliminada de manera exitosa`})
+    if(!content)
+    return res.status(200).json({success: false, error:"El cita no ha sido encontrada"})
+  })
+  .catch((error)=>{
+    res.status(500).json({success: false, error: 'Error, intente de nuevo'})
+  })
+}
+
+//logoutPsico
+
+
+
+
+

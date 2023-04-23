@@ -15,3 +15,19 @@ export const  serializedToken = async (token)=>{
 
 
 } 
+
+export const  salir = async (salir)=>{
+
+    const serializedT = serialize("userToken", salir, {
+    
+        httpOnly: false, //cuando ya estemos en producción no lo va a mostrar en las herramientas del navegador 
+        secure: false,
+        signed: true,
+        sameSite: "none",
+        maxAge: 0,
+        path: '/' //ruta de donde va a ser entregada 
+    })
+    return serializedT; 
+
+
+} 
