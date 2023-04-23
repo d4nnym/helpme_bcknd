@@ -2,7 +2,10 @@ import Paciente from  "../models/paciente.js"
 import {tokenSing} from  "../helpers/generateTokens.js"
 import bcrypt from "bcrypt";
 import { serializedToken } from "../helpers/setCookie.js";
+import { salir } from "../helpers/setCookie.js";
 import Citas from "../models/citas.js";
+import { serialize } from "cookie";
+
 
 
 //este es el cambio
@@ -96,27 +99,7 @@ export const actualizarPaciente = async (req,res)=>{
   }    
 }
 
-//----------------------------------------------------------------------------
-
-/*//obtener infomacion perfil paciente por profile
-export const getPerfil= async (req, res) => {
-  const { profile } = req.body;
-  try {
-    const paciente = await paciente.findOne( {profile} ).select( 
-      'profile email name lastname info.picture info.age info.location.country info.location.region info.location.city')
-    
-    if (!paciente) {
-      return res.status(404).json({ message: "No se encontró el psicólogo con el perfil proporcionado profile" });
-    }
-    return res.json({ message: "Se encontró la profession del psicólogo con éxito",  paciente  });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Error al obtener el psicólogo functionprofileProffession", error: error.message });
-  }
-};*/
-
-//obtener informacion perfil paciente por id
-//pendiente de revisar, no me funciona recibiendolo desde el body, me envia a "buscaePaciente"
+//-------------------------------------------------------------------------------------------------------
 
 export const getPerfilId = async (req, res)=>{
   const{id}=req.params;
@@ -139,7 +122,7 @@ export const loginPaciente= async (req, res)=> {
  
   
   const  {email, password} = req.body;
-  console.log(email)
+  
 
   try{
       const paciente = await Paciente.findOne({email:email})//.select(' profile password name email role')
@@ -170,70 +153,64 @@ export const loginPaciente= async (req, res)=> {
       return res.status(500).json({success: false, error: 'error, intente de nuevo'})
   }
 }
+//logout
+
+export const logoutPa = async (req, res) => {
+
+  try{
+    res.clearCookie('userToken');
+    //res.send('Cookie eliminada');
+    return res.status(200).json({success: true, request: 'Cierre de sesión exitoso'})
+
+  }catch{
+
+    return res.status(500).json({success: false, error: 'error, intente de nuevo'})
+  }
+}
+
 
 
 //-------------------------------------------------------------------------------------------------------
 
+//GUARDA UNA CITA CAMBIANDO EL ESTADO DE DISPONIBLE DE TRUE A FALSE, ADEMAS AGREGA LOS DATOS DEL PACIENTE AL ESQUEMA DE LA CITA
 
 export const agendarCita = async (req, res) => {
 
-  const { profilePsicologo, profilePaciente,  date, idCita } = req.body;
-  
-  const cita = await Citas.findByIdAndUpdate({_id:idCita}, { $set:{disponible:false}});
-  console.log(cita)
-  try {
-  
-    // Verificar si el paciente ya tiene una  citas programadas para la fecha especificada
-    const citasDelDia = await Citas.find({ profilePaciente, date: { $eq: date } });
-    
-    if (citasDelDia.length >= 1) {
+  const { profilePsicologo, profilePaciente, email,  date, idCita } = req.body;
+  const {id}=req.params
 
-      return res.status(400).json({ succes: false, mensaje: 'Ya  tienes una cita agendada para ese día' });
+  //const paciente = await Paciente.findOne({profilePaciente:Paciente.profile}).select('_id')
+  const paciente = await Paciente.findOne({email:email}).select('_id')
+  
+  try {
+    //validar que kla cita exista o no 
+
+    const citaExistente = await Citas.findOne({ email:email, date:{ $eq: date }}).select('idCita date start_time');
+    
+    if (citaExistente) {
+      return res.status(400).json({ succes:false, mensaje: 'Ya tiene una cita programada a esa hora', citaExistente });
     }
 
-    //agarrar los id de paciente. 
-    //const paciente = await Paciente.findOne({profilePaciente:Paciente.profile}).select('_id')
-    //console.log(paciente)
-    //Agendar
-   
-    
-    
-    return res.status(400).json({ succes: false, mensaje: 'todook' });
+    const cita = await Citas.findByIdAndUpdate({_id:idCita}, { $set:{disponible:false, email:email}},{new:true});
+
+    await Citas.findOne({ date, paciente });
+    if (citaExistente) {
+       return res.status(400).json({ mensaje: 'Ya tiene una cita programada para ese día 2' });
+    }
+
+    await Citas.findByIdAndUpdate({_id:idCita}, { $set:{paciente:paciente}},{new:true});
+    return res.status(200).json({ succes: true, mensaje: 'La cita fue agendada con éxito' });
  
   } catch (error) {
       console.error(error);
-      res.status(500).json({ mensaje: 'Error al crear la cita xd' });
-    }
+      res.status(500).json({ mensaje: 'Error al crear la cita ' });
+  }
+}
 
-    // Verificar si el psicologo ya tiene una cita a esa hora
-    //const citaExistente = await Citas.findOne({ idPsicologo, date, start_time });
-  //if (citaExistente) {
-     // return res.status(400).json({ mensaje: 'El psicólogo ya tiene una cita programada a esa hora' });
-    }
-  /*
-    // Convertir el valor de start_time en un objeto Date
-    const [hours, minutes] = start_time.split(':');
-    const startDateTime = new Date();
-    startDateTime.setHours(hours);
-    startDateTime.setMinutes(minutes);
-    startDateTime.setSeconds(0);
-*/
-    /*
-    // Crear la nueva cita
-    const cita = new Citas({
-      psicologo,
-      date,
-      start_time
-    });
-    await cita.save();
-
-    res.status(201).json({ mensaje: 'Cita creada exitosamente' });*/
-
-
-
-//Traer las citas 
+//Traer las citas disponibles  
 
 export const getCitaDisponibles = async (req, res) => {
+
   try {
     const cita = await Citas.find({disponible: true});
     if (cita.length === 0) {
@@ -244,5 +221,52 @@ export const getCitaDisponibles = async (req, res) => {
     return res.status(500).json({ success: true, request: 'Hubo un error al obtener las citas', error: error });
   }
 }
+
+
+
+//Elimina una cita ya existente mediante su id
+export const eliminarCitaPaciente = async (req, res)=>{
+
+  const{id}=req.body;
+
+  await Citas.findByIdAndDelete(id).then((content)=>{
+    
+    if(content)
+    return res.status(200).json({success: true, request: `La cita ha sido eliminada de manera exitosa`})
+    if(!content)
+    return res.status(200).json({success: false, error:"El cita no ha sido encontrada"})
+  })
+  .catch((error)=>{
+    res.status(500).json({success: false, error: 'Error, intente de nuevo'})
+  })
+}
+
+//Historial de Citas 
+
+export const historialCitasPaciente = async (req, res) => {
+
+  const {id}=req.params 
+  const paciente= await Paciente.findById(id).select('email')
+  console.log(paciente)
+  
+
+  const cita = await Citas.find({paciente, realizada: true});
+  
+  try {
+      
+
+      if (cita.length === 0) {
+        return res.status(200).json({ succes: false, request:  'No se tiene historial de citas' });
+      }
+      return res.status(200).json({ succes: true, request: 'Este es el historial de citas', citas: cita });
+   } catch (error) {
+        return res.status(500).json({ success: true, request: 'Hubo un error al obtener las citas', error: error });
+  }
+}
+
+
+
+
+
 
 

@@ -1,5 +1,6 @@
 import {Schema, model, mongoose} from 'mongoose'
-import { boolean } from 'yup';
+import moment from 'moment';
+
 
 
 const citaSchema = Schema({
@@ -8,12 +9,16 @@ const citaSchema = Schema({
       ref: 'Psicologo',
       
     },
+    emailPsicologo:{
+      type: String,
+    },
+    email: {
+      type: String,
+    },
     paciente: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Paciente',
     },
-    emailPaciente:{type:String},
-
     date: {
       type: String,
     },
@@ -21,18 +26,19 @@ const citaSchema = Schema({
       type: String,
     },
     end_time:{
-        type:Date,
+        type: String,
     },
     duracion: {
-      type: Number,
-      defaul: 60,
+      type: String,
+      default:"60 min",
     },
     realizada: {
       type: Boolean,
       default: false
     },
     notes: {
-      type: String
+      type: String,
+      default:"Ingrese notas",
     },
     disponible:{
         type: Boolean,
@@ -43,12 +49,14 @@ const citaSchema = Schema({
     timestamps: true,
 });
 
-//end ti,e
-  citaSchema.pre('save', function(next) {
-    if (this.start_time && this.duracion) {
-      this.end_time = new Date(this.start_time.getTime() + this.duracion * 60000);
-    }
+//end
+
+citaSchema.pre('save', function(next) {
+    const startMoment = moment(this.start_time, 'HH:mm');
+    const endMoment = startMoment.add(1, 'hour');
+    const endTime = endMoment.format('HH:mm');
+    this.end_time = endTime;
     next();
   });
-  
+
   export default model("cita", citaSchema);

@@ -6,6 +6,7 @@ import rutasPaciente from "./routes/paciente.routes.js"
 //import rutasAuth from "./routes/auth.routes.js"
 import cookieParser from "cookie-parser"
 import rutasPsicologo from './routes/psicologo.routes.js'
+import rutasAdministrador from './routes/administrador.routes.js'
 
 
 // configuraciones 
@@ -42,6 +43,7 @@ app.use(rutasPaciente);
 //app.use('/user', rutasAuth); 
 app.use(rutasPsicologo);
 
+app.use(rutasAdministrador);
 
 // exports
 

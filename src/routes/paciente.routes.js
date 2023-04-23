@@ -7,7 +7,10 @@ import {
   eliminarPaciente,
   obtenerPacientes,
   agendarCita,
-  getCitaDisponibles
+  getCitaDisponibles,
+  eliminarCitaPaciente,
+  historialCitasPaciente,
+  logoutPa
 } from "../controllers/paciente.controllers.js";
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/session.js";
@@ -26,7 +29,7 @@ router.post("/paciente/login",  loginPaciente)
 router.get(
   "/paciente/obtenerTodos",
   authMiddleware,
-  checkRol(["admin"]),
+  checkRol(["psicologo"]),
   obtenerPacientes
 ); // ruta autenticada con jwt y permisos de usuario segun el rol
 
@@ -37,14 +40,21 @@ router.get(
   buscarPaciente
 );
 router.delete("/paciente/eliminar/:id", authMiddleware,
-checkRol(["admin"]), eliminarPaciente, );
+checkRol(["psicologo"]), eliminarPaciente, );
 router.put("/paciente/:id", authMiddleware,
-checkRol(["admin"]), actualizarPaciente);
-router.get("/paciente/profile/:id", authMiddleware,
-checkRol(["admin"]), getPerfilId);
-router.put("/paciente/cita/agendarCita/", agendarCita);
+checkRol(["paciente"]), actualizarPaciente);
 
-router.get("/paciente/citas/disponibles", getCitaDisponibles);
+// Rutas adnmin 
+
+router.get("/paciente/profile/:id", authMiddleware,
+checkRol(["paciente"]), getPerfilId);
+router.put("/paciente/cita/agendarCita/", authMiddleware, checkRol(["paciente"]), agendarCita);
+router.put("/paciente/cita/agendarCita2/", authMiddleware, checkRol(["paciente"]), agendarCita);
+router.get("/paciente/cita/citasDisponibles", authMiddleware, checkRol(["paciente"]), getCitaDisponibles);
+router.delete("/paciente/cita/eliminarCita", authMiddleware, checkRol(["paciente"]), eliminarCitaPaciente);
+router.get('/paciente/cita/historialCitas/:id', authMiddleware, checkRol(["paciente"]), historialCitasPaciente )
+router.post('/paciente/logout', logoutPa )
+
 
 
 export default router;
