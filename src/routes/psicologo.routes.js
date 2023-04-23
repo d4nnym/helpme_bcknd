@@ -1,6 +1,7 @@
 import { createPsycho, getPsycho,getPsychoByProfile,getProfe,deletePsychoById,deletePsychoByProfile, 
     updatePsychoById ,getPsychoById,getPsychoValidados,getPsychoNoValidados, 
-    getPerfil,getPerfilId, loginPsicologo, crearCitaParaPsicologo, estadoCita, historialCitasAntiguas, updateCitasId, eliminarCitaPsicologo, logoutPs} 
+    getPerfil,getPerfilId, loginPsicologo, crearCitaParaPsicologo, estadoCita, historialCitasAntiguas, 
+    updateCitasId, eliminarCitaPsicologo, getRealizadaFalse, logoutPs} 
     from '../controllers/psicologo.controller.js'   
 import { authMiddlewarePsi } from "../middlewares/sessionPsicologo.js";
 import { authMiddlewareAd } from "../middlewares/sessionAdmin.js";
@@ -35,6 +36,7 @@ router.post('/psicologo/crearcitas', authMiddlewarePsi, checkRol(["psicologo"]),
 router.post('/psicologo/cita/validarEstadoCita', authMiddlewarePsi, checkRol(["psicologo"]), estadoCita ); 
 router.get('/psicologo/cita/historialPsicologo/:id', authMiddlewarePsi, checkRol(["psicologo"]), historialCitasAntiguas )
 router.get('/psicologo/cita/update/', authMiddlewarePsi, checkRol(["psicologo"]), updateCitasId ) 
+router.get('/psicologo/citas/pendientes/', authMiddlewarePsi, checkRol(["psicologo"]), getRealizadaFalse )
 router.delete("/psicologo/cita/eliminarCita",  authMiddlewarePsi, checkRol(["psicologo"]), eliminarCitaPsicologo);
 router.post('/psicologo/logout', logoutPs )
 //login

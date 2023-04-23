@@ -336,20 +336,22 @@ export const historialCitasAntiguas = async (req, res) => {
 }
 
 //traer todas la citas  campo realizada en false
+
 export const getRealizadaFalse = async (req, res) => {
   const {psicologo} = req.body;
-    console.log(req.body)
+    console.log(psicologo)
 
   try {
     const citarealizada = await Citas.find({psicologo, realizada: false});
     if (citarealizada.length === 0) {
-      return res.status(200).json({ succes: false, request:  'No se encontraron cita en la base de dat0s' });
+      return res.status(200).json({ succes: false, request:  'No se encontraron citas disponibles en la base de dat0s' });
     }
-    return res.status(200).json({ succes: true, request: 'Se obtuvieron todos loscitas realizada: false con éxito4', citas: citarealizada });
+    return res.status(200).json({ succes: true, request: 'Citas pendientes ', citas: citarealizada });
   } catch (error) {
-    return res.status(500).json({ success: true, request: 'Hubo un error al obtener los cit4as', error: error });
+    return res.status(500).json({ success: true, request: 'Hubo un error al obtener los citas', error: error });
   }
 }
+
  //update cita
  //function update psychologist for id
 
