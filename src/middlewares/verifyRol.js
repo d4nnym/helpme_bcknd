@@ -9,7 +9,7 @@
 
 export const checkRol =(roles)=>(req, res, next)=>{  
    try{
-    console.log('aqui')
+
     const {user}= req
     const roleUser= user.role //extrae el rol del usuario desde la bd 
     const checkValueRol = roles.some((rolSingle)=> roleUser.includes(rolSingle))
